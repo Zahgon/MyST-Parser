@@ -14,13 +14,7 @@ def validate_field(inst: Any, field: dc.Field, value: Any) -> None:
     The validator function should take as input (inst, field, value) and
     raise an exception if the value is invalid.
     """
-    if "validator" not in field.metadata:
-        return
-    if isinstance(field.metadata["validator"], list):
-        for validator in field.metadata["validator"]:
-            validator(inst, field, value)
-    else:
-        field.metadata["validator"](inst, field, value)
+    pass
 
 
 def validate_fields(inst: Any) -> None:
@@ -32,8 +26,7 @@ def validate_fields(inst: Any) -> None:
     The validator function should take as input (inst, field, value) and
     raise an exception if the value is invalid.
     """
-    for field in dc.fields(inst):
-        validate_field(inst, field, getattr(inst, field.name))
+    pass
 
 
 class ValidatorType(Protocol):
@@ -61,11 +54,7 @@ def instance_of(type_: type[Any] | tuple[type[Any], ...]) -> ValidatorType:
         """
         We use a callable class to be able to change the ``__repr__``.
         """
-        if not isinstance(value, type_):
-            raise TypeError(
-                f"'{field.name}{suffix}' must be of type {type_!r} "
-                f"(got {value!r} that is a {value.__class__!r})."
-            )
+        pass
 
     return _validator
 
@@ -78,10 +67,7 @@ def optional(validator: ValidatorType) -> ValidatorType:
     """
 
     def _validator(inst, field, value, suffix=""):
-        if value is None:
-            return
-
-        validator(inst, field, value, suffix=suffix)
+        pass
 
     return _validator
 
@@ -92,11 +78,7 @@ def is_callable(inst, field, value, suffix=""):
     initializer is called with a value for this particular attribute
     that is not callable.
     """
-    if not callable(value):
-        raise TypeError(
-            f"'{field.name}{suffix}' must be callable "
-            f"(got {value!r} that is a {value.__class__!r})."
-        )
+    pass
 
 
 def in_(options: Sequence) -> ValidatorType:
@@ -109,15 +91,7 @@ def in_(options: Sequence) -> ValidatorType:
     """
 
     def _validator(inst, field, value, suffix=""):
-        try:
-            in_options = value in options
-        except TypeError:  # e.g. `1 in "abc"`
-            in_options = False
-
-        if not in_options:
-            raise ValueError(
-                f"'{field.name}{suffix}' must be in {options!r} (got {value!r})"
-            )
+        pass
 
     return _validator
 
@@ -133,11 +107,7 @@ def deep_iterable(
     """
 
     def _validator(inst, field, value, suffix=""):
-        if iterable_validator is not None:
-            iterable_validator(inst, field, value, suffix=suffix)
-
-        for idx, member in enumerate(value):
-            member_validator(inst, field, member, suffix=f"{suffix}[{idx}]")
+        pass
 
     return _validator
 
@@ -156,11 +126,6 @@ def deep_mapping(
     """
 
     def _validator(inst, field: dc.Field, value, suffix=""):
-        if mapping_validator is not None:
-            mapping_validator(inst, field, value)
-
-        for key in value:
-            key_validator(inst, field, key, suffix=f"{suffix}[{key!r}]")
-            value_validator(inst, field, value[key], suffix=f"{suffix}[{key!r}]")
+        pass
 
     return _validator

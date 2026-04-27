@@ -38,7 +38,7 @@ class Attribute(dict):
     @property
     def classes(self) -> list[str]:
         """Return 'class' attribute as list."""
-        return self["class"].split()
+        pass
 
     def __str__(self) -> str:
         """Return a htmlized representation for attributes."""
@@ -61,25 +61,15 @@ class Element(abc.MutableSequence):
     @property
     def parent(self) -> Element | None:
         """Return parent."""
-        return self._parent
+        pass
 
     @property
     def children(self) -> list[Element]:
         """Return copy of children."""
-        return self._children[:]
+        pass
 
     def reset_children(self, children: list[Element], deepcopy: bool = False):
-        new_children = []
-        for i, item in enumerate(children):
-            assert isinstance(item, Element)
-            if deepcopy:
-                item = item.deepcopy()
-            if item._parent is None:
-                item._parent = self
-            elif item._parent != self:
-                raise AssertionError(f"different parent already set for item {i}")
-            new_children.append(item)
-        self._children = new_children
+        pass
 
     def __getitem__(self, index: int) -> Element:  # type: ignore[override]
         return self._children[index]
@@ -101,11 +91,7 @@ class Element(abc.MutableSequence):
         yield from self._children
 
     def insert(self, index: int, item: Element):
-        assert isinstance(item, Element)
-        if item._parent is not None and item._parent != self:
-            raise AssertionError(f"different parent already set for: {item!r}")
-        item._parent = self
-        return self._children.insert(index, item)
+        pass
 
     def deepcopy(self) -> Element:
         """Recursively copy and remove parent."""
@@ -153,20 +139,7 @@ class Element(abc.MutableSequence):
         """Return copy with all `Data` tokens
         that only contain whitespace / newlines removed.
         """
-        element = self
-        if not inplace:
-            element = self.deepcopy()
-        element.reset_children(
-            [
-                e
-                for e in element.children
-                if not (isinstance(e, Data) and e.data.strip() == "")
-            ]
-        )
-        if recurse:
-            for child in element:
-                child.strip(inplace=True, recurse=True)
-        return element
+        pass
 
     def find(
         self,
@@ -202,7 +175,7 @@ class Root(Element):
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
         """Returns a string HTML representation of the structure."""
-        return "".join(child.render(**kwargs) for child in self)
+        pass
 
 
 class Tag(Element):
@@ -213,15 +186,7 @@ class Tag(Element):
         tag_overrides: dict[str, Callable[[Element, dict], str]] | None = None,
         **kwargs,
     ) -> str:
-        if tag_overrides and self.name in tag_overrides:
-            return tag_overrides[self.name](self, tag_overrides)
-        return (
-            f"<{self.name}{' ' if self.attrs else ''}{self.attrs}>"
-            + "".join(
-                child.render(tag_overrides=tag_overrides, **kwargs) for child in self
-            )
-            + f"</{self.name}>"
-        )
+        pass
 
 
 class XTag(Element):
@@ -232,16 +197,14 @@ class XTag(Element):
         tag_overrides: dict[str, Callable[[Element, dict], str]] | None = None,
         **kwargs,
     ) -> str:
-        if tag_overrides is not None and self.name in tag_overrides:
-            return tag_overrides[self.name](self, tag_overrides)
-        return f"<{self.name}{' ' if self.attrs else ''}{self.attrs}/>"
+        pass
 
 
 class VoidTag(Element):
     """Represent tags with no children, only start tag, like `<img src="t.gif" >`"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"<{self.name}{' ' if self.attrs else ''}{self.attrs}>"
+        pass
 
 
 class TerminalElement(Element):
@@ -265,42 +228,42 @@ class Data(TerminalElement):
     """Represent data inside xml/html documents, like raw text."""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return self.data
+        pass
 
 
 class Declaration(TerminalElement):
     """Represent declarations, like `<!DOCTYPE html>`"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"<!{self.data}>"
+        pass
 
 
 class Comment(TerminalElement):
     """Represent HTML comments"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"<!--{self.data}-->"
+        pass
 
 
 class Pi(TerminalElement):
     """Represent processing instructions like `<?xml-stylesheet ?>`"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"<?{self.data}>"
+        pass
 
 
 class Char(TerminalElement):
     """Represent character codes like: `&#0`"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"&#{self.data};"
+        pass
 
 
 class Entity(TerminalElement):
     """Represent entities like `&amp`"""
 
     def render(self, **kwargs) -> str:  # type: ignore[override]
-        return f"&{self.data};"
+        pass
 
 
 class Tree:
@@ -315,57 +278,35 @@ class Tree:
 
     def clear(self):
         """Clear the outmost and stack for a new parsing."""
-        self.outmost = Root(self.name)
-        self.stack.clear()
-        self.stack.append(self.outmost)
+        pass
 
     def last(self) -> Element:
         """Return the last pointer which point to the actual tag scope."""
-        return self.stack[-1]
+        pass
 
     def nest_tag(self, name: str, attrs: dict):
         """Nest a given tag at the bottom of the tree using
         the last stack's pointer.
         """
-        pointer = self.stack.pop()
-        item = Tag(name, attrs)
-        pointer.append(item)
-        self.stack.append(pointer)
-        self.stack.append(item)
+        pass
 
     def nest_xtag(self, name: str, attrs: dict):
         """Nest an XTag onto the tree."""
-        top = self.last()
-        item = XTag(name, attrs)
-        top.append(item)
+        pass
 
     def nest_vtag(self, name: str, attrs: dict):
         """Nest a VoidTag onto the tree."""
-        top = self.last()
-        item = VoidTag(name, attrs)
-        top.append(item)
+        pass
 
     def nest_terminal(self, klass: type[TerminalElement], data: str):
         """Nest the data onto the tree."""
-        top = self.last()
-        item = klass(data)
-        top.append(item)
+        pass
 
     def enclose(self, name: str):
         """When a closing tag is found, pop the pointer's scope from the stack,
         to then point to the earlier scope's tag.
         """
-        count = 0
-        for ind in reversed(self.stack):
-            count = count + 1
-            if ind.name == name:
-                break
-        else:
-            count = 0
-
-        # It pops all the items which do not match with the closing tag.
-        for _ in range(count):
-            self.stack.pop()
+        pass
 
 
 class HtmlToAst(HTMLParser):
@@ -395,49 +336,42 @@ class HtmlToAst(HTMLParser):
 
     def feed(self, source: str) -> Root:  # type: ignore[override]
         """Parse the source string."""
-        self.struct.clear()
-        super().feed(source)
-        return self.struct.outmost
+        pass
 
     def handle_starttag(self, name: str, attr):
         """When found an opening tag then nest it onto the tree."""
-        if name in self.void_elements:
-            self.struct.nest_vtag(name, attr)
-        else:
-            self.struct.nest_tag(name, attr)
+        pass
 
     def handle_startendtag(self, name: str, attr):
         """When found a XHTML tag style then nest it up to the tree."""
-        self.struct.nest_xtag(name, attr)
+        pass
 
     def handle_endtag(self, name: str):
         """When found a closing tag then makes it point to the right scope."""
-        if name not in self.void_elements:
-            self.struct.enclose(name)
+        pass
 
     def handle_data(self, data: str):
         """Nest data onto the tree."""
-        self.struct.nest_terminal(Data, data)
+        pass
 
     def handle_decl(self, decl: str):
-        self.struct.nest_terminal(Declaration, decl)
+        pass
 
     def unknown_decl(self, decl: str):
-        self.struct.nest_terminal(Declaration, decl)
+        pass
 
     def handle_charref(self, data: str):
-        self.struct.nest_terminal(Char, data)
+        pass
 
     def handle_entityref(self, data: str):
-        self.struct.nest_terminal(Entity, data)
+        pass
 
     def handle_pi(self, data: str):
-        self.struct.nest_terminal(Pi, data)
+        pass
 
     def handle_comment(self, data: str):
-        self.struct.nest_terminal(Comment, data)
+        pass
 
 
 def tokenize_html(text: str, name: str = "", convert_charrefs: bool = False) -> Root:
-    parser = HtmlToAst(name, convert_charrefs=convert_charrefs)
-    return parser.feed(text)
+    pass

@@ -50,43 +50,12 @@ class InventoryType(TypedDict):
 
 def from_sphinx(inv: SphinxInventoryType) -> InventoryType:
     """Convert from a Sphinx compliant format."""
-    project = ""
-    version = ""
-    objs: dict[str, dict[str, dict[str, InventoryItemType]]] = {}
-    for domain_obj_name, data in inv.items():
-        if ":" not in domain_obj_name:
-            continue
-
-        domain_name, obj_type = domain_obj_name.split(":", 1)
-        objs.setdefault(domain_name, {}).setdefault(obj_type, {})
-        for refname, refdata in data.items():
-            project, version, uri, text = refdata
-            objs[domain_name][obj_type][refname] = {
-                "loc": uri,
-                "text": None if (not text or text == "-") else text,
-            }
-
-    return {
-        "name": project,
-        "version": version,
-        "base_url": None,
-        "objects": objs,
-    }
+    pass
 
 
 def to_sphinx(inv: InventoryType) -> SphinxInventoryType:
     """Convert to a Sphinx compliant format."""
-    objs: SphinxInventoryType = {}
-    for domain_name, obj_types in inv["objects"].items():
-        for obj_type, refs in obj_types.items():
-            for refname, refdata in refs.items():
-                objs.setdefault(f"{domain_name}:{obj_type}", {})[refname] = (  # type: ignore[assignment]
-                    inv["name"],
-                    inv["version"],
-                    refdata["loc"],
-                    refdata["text"] or "-",
-                )
-    return objs
+    pass
 
 
 def load(stream: IO, base_url: str | None = None) -> InventoryType:
@@ -287,7 +256,7 @@ class InvMatch:
     text: str | None
 
     def asdict(self) -> dict[str, str]:
-        return asdict(self)
+        pass
 
 
 def filter_inventories(
@@ -352,34 +321,7 @@ def filter_sphinx_inventories(
     :param otypes: the object type filter
     :param targets: the target name filter
     """
-    for inv_name, inv_data in inventories.items():
-        if not match_with_wildcard(inv_name, invs):
-            continue
-        for domain_obj_name, data in inv_data.items():
-            if ":" not in domain_obj_name:
-                continue
-            domain_name, obj_type = domain_obj_name.split(":", 1)
-            if not (
-                match_with_wildcard(domain_name, domains)
-                and match_with_wildcard(obj_type, otypes)
-            ):
-                continue
-            for target in data:
-                if match_with_wildcard(target, targets):
-                    project, version, loc, text = data[target]
-                    yield (
-                        InvMatch(
-                            inv=inv_name,
-                            domain=domain_name,
-                            otype=obj_type,
-                            name=target,
-                            project=project,
-                            version=version,
-                            base_url=None,
-                            loc=loc,
-                            text=None if (not text or text == "-") else text,
-                        )
-                    )
+    pass
 
 
 def filter_string(
@@ -391,26 +333,14 @@ def filter_string(
     delimiter: str = ":",
 ) -> str:
     """Create a string representation of the filter, from the given arguments."""
-    str_items = []
-    for item in (invs, domains, otype, target):
-        if item is None:
-            str_items.append("*")
-        elif delimiter in item:
-            str_items.append(f'"{item}"')
-        else:
-            str_items.append(f"{item}")
-    return delimiter.join(str_items)
+    pass
 
 
 def fetch_inventory(
     uri: str, *, timeout: None | float = None, base_url: None | str = None
 ) -> InventoryType:
     """Fetch an inventory from a URL or local path."""
-    if uri.startswith(("http://", "https://")):
-        with urlopen(uri, timeout=timeout) as stream:
-            return load(stream, base_url=base_url)
-    with open(uri, "rb") as stream:
-        return load(stream, base_url=base_url)
+    pass
 
 
 def inventory_cli(inputs: None | list[str] = None):

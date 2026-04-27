@@ -24,31 +24,7 @@ from .dc_validators import (
 
 def check_extensions(inst: "MdParserConfig", field: dc.Field, value: Any) -> None:
     """Check that the extensions are a list of known strings"""
-    if not isinstance(value, Iterable):
-        raise TypeError(f"'{field.name}' not iterable: {value}")
-    diff = set(value).difference(
-        [
-            "amsmath",
-            "attrs_image",
-            "attrs_inline",
-            "attrs_block",
-            "colon_fence",
-            "deflist",
-            "dollarmath",
-            "fieldlist",
-            "html_admonition",
-            "html_image",
-            "linkify",
-            "replacements",
-            "smartquotes",
-            "strikethrough",
-            "substitution",
-            "tasklist",
-        ]
-    )
-    if diff:
-        raise ValueError(f"'{field.name}' items not recognised: {diff}")
-    setattr(inst, field.name, set(value))
+    pass
 
 
 class UrlSchemeType(TypedDict, total=False):
@@ -61,111 +37,36 @@ class UrlSchemeType(TypedDict, total=False):
 
 def check_url_schemes(inst: "MdParserConfig", field: dc.Field, value: Any) -> None:
     """Check that the external schemes are of the right format."""
-    if isinstance(value, list | tuple):
-        if not all(isinstance(v, str) for v in value):
-            raise TypeError(f"'{field.name}' is not a list of strings: {value!r}")
-        value = dict.fromkeys(value)
-
-    if not isinstance(value, dict):
-        raise TypeError(f"'{field.name}' is not a dictionary: {value!r}")
-
-    new_dict: dict[str, UrlSchemeType | None] = {}
-    for key, val in value.items():
-        if not isinstance(key, str):
-            raise TypeError(f"'{field.name}' key is not a string: {key!r}")
-        if val is None:
-            new_dict[key] = val
-        elif isinstance(val, str):
-            new_dict[key] = {"url": val}
-        elif isinstance(val, dict):
-            if not all(isinstance(k, str) for k in val):
-                raise TypeError(f"'{field.name}[{key}]' keys are not strings: {val!r}")
-            if "url" in val and not isinstance(val["url"], str):
-                raise TypeError(
-                    f"'{field.name}[{key}][url]' is not a string: {val['url']!r}"
-                )
-            if "title" in val and not isinstance(val["title"], str):
-                raise TypeError(
-                    f"'{field.name}[{key}][title]' is not a string: {val['title']!r}"
-                )
-            if (
-                "classes" in val
-                and not isinstance(val["classes"], list)
-                and not all(isinstance(c, str) for c in val["classes"])
-            ):
-                raise TypeError(
-                    f"'{field.name}[{key}][classes]' is not a list of str: {val['classes']!r}"
-                )
-            new_dict[key] = val  # type: ignore[assignment]
-        else:
-            raise TypeError(
-                f"'{field.name}[{key}]' value is not a string or dict: {val!r}"
-            )
-
-    setattr(inst, field.name, new_dict)
+    pass
 
 
 def check_sub_delimiters(_: "MdParserConfig", field: dc.Field, value: Any) -> None:
     """Check that the sub_delimiters are a tuple of length 2 of strings of length 1"""
-    if (not isinstance(value, tuple | list)) or len(value) != 2:
-        raise TypeError(f"'{field.name}' is not a tuple of length 2: {value}")
-    for delim in value:
-        if (not isinstance(delim, str)) or len(delim) != 1:
-            raise TypeError(
-                f"'{field.name}' does not contain strings of length 1: {value}"
-            )
+    pass
 
 
 def check_inventories(_: "MdParserConfig", field: dc.Field, value: Any) -> None:
     """Check that the inventories are a dict of {str: (str, Optional[str])}"""
-    if not isinstance(value, dict):
-        raise TypeError(f"'{field.name}' is not a dictionary: {value!r}")
-    for key, val in value.items():
-        if not isinstance(key, str):
-            raise TypeError(f"'{field.name}' key is not a string: {key!r}")
-        if not isinstance(val, tuple | list) or len(val) != 2:
-            raise TypeError(
-                f"'{field.name}[{key}]' value is not a 2-item list: {val!r}"
-            )
-        if not isinstance(val[0], str):
-            raise TypeError(f"'{field.name}[{key}][0]' is not a string: {val[0]}")
-        if not (val[1] is None or isinstance(val[1], str)):
-            raise TypeError(f"'{field.name}[{key}][1]' is not a null/string: {val[1]}")
+    pass
 
 
 def check_heading_slug_func(
     inst: "MdParserConfig", field: dc.Field, value: Any
 ) -> None:
     """Check that the heading_slug_func is a callable."""
-    if value is None:
-        return
-    if isinstance(value, str):
-        # attempt to load the function as a python import
-        try:
-            module_path, function_name = value.rsplit(".", 1)
-            mod = import_module(module_path)
-            value = getattr(mod, function_name)
-        except ImportError as exc:
-            raise TypeError(
-                f"'{field.name}' could not be loaded from string: {value!r}"
-            ) from exc
-        setattr(inst, field.name, value)
-    if not callable(value):
-        raise TypeError(f"'{field.name}' is not callable: {value!r}")
+    pass
 
 
 def _test_slug_func(text: str) -> str:
     """Dummy slug function, this is imported during testing."""
-    # reverse the text
-    return text[::-1]
+    pass
 
 
 def check_fence_as_directive(
     inst: "MdParserConfig", field: dc.Field, value: Any
 ) -> None:
     """Check that the extensions are a sequence of known strings"""
-    deep_iterable(instance_of(str), instance_of((list, tuple, set)))(inst, field, value)
-    setattr(inst, field.name, set(value))
+    pass
 
 
 @dc.dataclass()
@@ -480,7 +381,7 @@ class MdParserConfig:
 
         Note: initiating the copy will also validate the new fields.
         """
-        return dc.replace(self, **kwargs)
+        pass
 
     @classmethod
     def get_fields(cls) -> tuple[dc.Field, ...]:
@@ -489,13 +390,11 @@ class MdParserConfig:
 
     def as_dict(self, dict_factory=dict) -> dict:
         """Return a dictionary of field name -> value."""
-        return dc.asdict(self, dict_factory=dict_factory)
+        pass
 
     def as_triple(self) -> Iterable[tuple[str, Any, dc.Field]]:
         """Yield triples of (name, value, field)."""
-        fields = {f.name: f for f in dc.fields(self.__class__)}
-        for name, value in dc.asdict(self).items():
-            yield name, value, fields[name]
+        pass
 
 
 def merge_file_level(
@@ -510,52 +409,7 @@ def merge_file_level(
     :param warning: Function to call with a warning (type, message).
     :returns: A new config object
     """
-    # get updates
-    updates: dict[str, Any] = {}
-    myst = topmatter.get("myst", {})
-    if not isinstance(myst, dict):
-        warning(MystWarnings.MD_TOPMATTER, f"'myst' key not a dict: {type(myst)}")
-    else:
-        updates = myst
-
-    # allow html_meta and substitutions at top-level for back-compatibility
-    if "html_meta" in topmatter:
-        warning(
-            MystWarnings.MD_TOPMATTER,
-            "top-level 'html_meta' key is deprecated, place under 'myst' key instead",
-        )
-        updates["html_meta"] = topmatter["html_meta"]
-    if "substitutions" in topmatter:
-        warning(
-            MystWarnings.MD_TOPMATTER,
-            "top-level 'substitutions' key is deprecated, "
-            "place under 'myst' key instead",
-        )
-        updates["substitutions"] = topmatter["substitutions"]
-
-    new = config.copy()
-
-    # validate each update
-    fields = {name: (value, field) for name, value, field in config.as_triple()}
-    for name, value in updates.items():
-        if name not in fields:
-            warning(MystWarnings.MD_TOPMATTER, f"Unknown field: {name}")
-            continue
-
-        old_value, field = fields[name]
-
-        try:
-            validate_field(new, field, value)
-        except Exception as exc:
-            warning(MystWarnings.MD_TOPMATTER, str(exc))
-            continue
-
-        if field.metadata.get("merge_topmatter"):
-            value = {**old_value, **value}
-
-        setattr(new, name, value)
-
-    return new
+    pass
 
 
 class TopmatterReadError(Exception):
@@ -571,26 +425,4 @@ def read_topmatter(text: str | Iterator[str]) -> dict[str, Any] | None:
     :param source: The source string to read from
     :return: The topmatter
     """
-    import yaml
-
-    if isinstance(text, str):
-        if not text.startswith("---"):  # skip creating the line list in memory
-            return None
-        text = (line for line in text.splitlines())
-    try:
-        if not next(text).startswith("---"):
-            return None
-    except StopIteration:
-        return None
-    top_matter = []
-    for line in text:
-        if line.startswith(("---", "...")):
-            break
-        top_matter.append(line.rstrip() + "\n")
-    try:
-        metadata = yaml.safe_load("".join(top_matter))
-    except (yaml.parser.ParserError, yaml.scanner.ScannerError) as err:
-        raise TopmatterReadError("Malformed YAML") from err
-    if not isinstance(metadata, dict):
-        raise TopmatterReadError(f"YAML is not a dict: {type(metadata)}")
-    return metadata
+    pass

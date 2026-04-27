@@ -50,11 +50,7 @@ class MystParser(SphinxParser):
     translate_section_name = None
 
     def get_transforms(self):
-        return super().get_transforms() + [
-            SortFootnotes,
-            CollectFootnotes,
-            ResolveAnchorIds,
-        ]
+        pass
 
     def parse(self, inputstring: str, document: nodes.document) -> None:
         """Parse source text.
@@ -63,21 +59,4 @@ class MystParser(SphinxParser):
         :param document: The root docutils node to add AST elements to
 
         """
-        # get the global config
-        config: MdParserConfig = document.settings.env.myst_config
-
-        # update the global config with the file-level config
-        try:
-            topmatter = read_topmatter(inputstring)
-        except TopmatterReadError:
-            pass  # this will be reported during the render
-        else:
-            if topmatter:
-                warning = lambda wtype, msg: create_warning(  # noqa: E731
-                    document, msg, wtype, line=1, append_to=document
-                )
-                config = merge_file_level(config, topmatter, warning)
-
-        parser = create_md_parser(config, SphinxRenderer)
-        parser.options["document"] = document
-        parser.render(inputstring)
+        pass

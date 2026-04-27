@@ -74,21 +74,7 @@ def _is_suppressed_warning(
     Mirrors:
     https://github.com/sphinx-doc/sphinx/blob/47d9035bca9e83d6db30a0726a02dc9265bd66b1/sphinx/util/logging.py
     """
-    if type is None:
-        return False
-
-    subtarget: str | None
-
-    for warning_type in suppress_warnings:
-        if "." in warning_type:
-            target, subtarget = warning_type.split(".", 1)
-        else:
-            target, subtarget = warning_type, None
-
-        if target == type and subtarget in (None, subtype, "*"):
-            return True
-
-    return False
+    pass
 
 
 def create_warning(
@@ -106,57 +92,10 @@ def create_warning(
     If the warning type is listed in the ``suppress_warnings`` configuration,
     then ``None`` will be returned and no warning logged.
     """
-    # In general we want to both create a warning node within the document AST,
-    # and also log the warning to output it in the CLI etc.
-    # docutils and sphinx have different ways of doing this, so we need to handle both.
-    # Note also that in general we want to show the type/subtype in the warning message,
-    # but this was added as an option to sphinx in v7.3, and made the default in v8.0.
-
-    type_str = wtype if wtype is not None else "myst"
-    subtype_str = subtype if isinstance(subtype, str) else subtype.value
-
-    message_with_type = f"{message} [{type_str}.{subtype_str}]"
-
-    if hasattr(document.settings, "env"):
-        # Sphinx
-        from sphinx.util.logging import getLogger
-
-        logger = getLogger(__name__)
-        logger.warning(
-            message,
-            type=type_str,
-            subtype=subtype_str,
-            location=node if node is not None else (document["source"], line),
-        )
-        if _is_suppressed_warning(
-            type_str, subtype_str, document.settings.env.config.suppress_warnings
-        ):
-            return None
-        if node is not None:
-            _source, _line = utils.get_source_line(node)
-        else:
-            _source, _line = document["source"], line
-        msg_node = _create_warning_node(message_with_type, _source, _line)
-    else:
-        # docutils
-        if _is_suppressed_warning(
-            type_str, subtype_str, document.settings.myst_suppress_warnings or []
-        ):
-            return None
-        kwargs = {}
-        if node is not None:
-            kwargs["base_node"] = node
-        elif line is not None:
-            kwargs["line"] = line
-        msg_node = document.reporter.warning(message_with_type, **kwargs)
-
-    if append_to is not None:
-        append_to.append(msg_node)
-    return msg_node
+    pass
 
 
 def _create_warning_node(
     msg: str, source: str, line: int | None
 ) -> nodes.system_message:
-    kwargs = {"line": line} if line is not None else {}
-    return nodes.system_message(msg, level=2, type="WARNING", source=source, **kwargs)
+    pass

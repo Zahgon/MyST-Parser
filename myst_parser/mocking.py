@@ -54,30 +54,13 @@ class MockInliner:
         self, text: str, rawsource: str, message: nodes.system_message
     ) -> nodes.problematic:
         """Record a system message from parsing."""
-        msgid = self.document.set_id(message, self.parent)
-        problematic = nodes.problematic(rawsource, text, refid=msgid)
-        prbid = self.document.set_id(problematic)
-        message.add_backref(prbid)
-        return problematic
+        pass
 
     def parse(
         self, text: str, lineno: int, memo: Any, parent: nodes.Node
     ) -> tuple[list[nodes.Node], list[nodes.system_message]]:
         """Parse the text and return a list of nodes."""
-        # note the only place this is normally called,
-        # is by `RSTState.inline_text`, or in directives: `self.state.inline_text`,
-        # and there the state parses its own parent
-        # self.reporter = memo.reporter
-        # self.document = memo.document
-        # self.language = memo.language
-        with self._renderer.current_node_context(parent):
-            # the parent is never actually appended to though,
-            # so we make a temporary parent to parse into
-            container = nodes.Element()
-            with self._renderer.current_node_context(container):
-                self._renderer.nested_render_text(text, lineno, inline=True)
-
-        return container.children, []
+        pass
 
     def __getattr__(self, name: str):
         """This method is only be called if the attribute requested has not
@@ -135,19 +118,7 @@ class MockState:
         :raises MarkupError: for errors in parsing the directive
         :returns: (arguments, options, content, content_offset)
         """
-        # note this is essentially only used by the docutils `role` directive
-        if option_presets:
-            raise MockingError("parse_directive_block: option_presets not implemented")
-        # TODO should argument_str always be ""?
-        parsed = parse_directive_text(directive, "", "\n".join(content))
-        if parsed.warnings:
-            raise MarkupError(",".join(w.msg for w in parsed.warnings))
-        return (
-            parsed.arguments,
-            parsed.options,
-            StringList(parsed.body, source=content.source),
-            line_offset + parsed.body_offset,
-        )
+        pass
 
     def nested_parse(
         self,
@@ -168,27 +139,13 @@ class MockState:
             (normally this is false,
             since nested heading would break the document structure)
         """
-        sm_match_titles = self.state_machine.match_titles
-        with self._renderer.current_node_context(node):
-            self._renderer.nested_render_text(
-                "\n".join(block),
-                self._lineno + input_offset,
-                temp_root_node=node if match_titles else None,
-            )
-        self.state_machine.match_titles = sm_match_titles
+        pass
 
     def parse_target(self, block, block_text, lineno: int):
         """
         Taken from https://github.com/docutils-mirror/docutils/blob/e88c5fb08d5cdfa8b4ac1020dd6f7177778d5990/docutils/parsers/rst/states.py#L1927
         """
-        # Commenting out this code because it only applies to rST
-        # if block and block[-1].strip()[-1:] == "_":  # possible indirect target
-        #     reference = " ".join([line.strip() for line in block])
-        #     refname = self.is_reference(reference)
-        #     if refname:
-        #         return "refname", refname
-        reference = "".join(["".join(line.split()) for line in block])
-        return "refuri", unescape(reference)
+        pass
 
     def inline_text(
         self, text: str, lineno: int
@@ -197,7 +154,7 @@ class MockState:
 
         :returns: (list of nodes, list of messages)
         """
-        return self.inliner.parse(text, lineno, self.memo, self._renderer.current_node)
+        pass
 
     # U+2014 is an em-dash:
     attribution_pattern = re.compile("^((?:---?(?!-)|\u2014) *)(.+)")
@@ -212,85 +169,23 @@ class MockState:
 
            -- Buckaroo Banzai
         """
-        elements = []
-        # split attribution
-        last_line_blank = False
-        blockquote_lines = lines
-        attribution_lines = []
-        attribution_line_offset = None
-        # First line after a blank line must begin with a dash
-        for i, line in enumerate(lines):
-            if not line.strip():
-                last_line_blank = True
-                continue
-            if not last_line_blank:
-                last_line_blank = False
-                continue
-            last_line_blank = False
-            match = self.attribution_pattern.match(line)
-            if not match:
-                continue
-            attribution_line_offset = i
-            attribution_lines = [match.group(2)]
-            for at_line in lines[i + 1 :]:
-                indented_line = at_line[len(match.group(1)) :]
-                if len(indented_line) != len(at_line.lstrip()):
-                    break
-                attribution_lines.append(indented_line)
-            blockquote_lines = lines[:i]
-            break
-        # parse block
-        blockquote = nodes.block_quote()
-        self.nested_parse(blockquote_lines, line_offset, blockquote)
-        elements.append(blockquote)
-        # parse attribution
-        if attribution_lines:
-            attribution_text = "\n".join(attribution_lines)
-            lineno = self._lineno + line_offset + (attribution_line_offset or 0)
-            textnodes, messages = self.inline_text(attribution_text, lineno)
-            attribution = nodes.attribution(attribution_text, "", *textnodes)
-            (
-                attribution.source,
-                attribution.line,
-            ) = self.state_machine.get_source_and_line(lineno)
-            blockquote += attribution
-            elements += messages
-        return elements
+        pass
 
     def build_table(self, tabledata, tableline, stub_columns: int = 0, widths=None):
-        return Body.build_table(self, tabledata, tableline, stub_columns, widths)
+        pass
 
     def build_table_row(self, rowdata, tableline):
-        return Body.build_table_row(self, rowdata, tableline)
+        pass
 
     def nest_line_block_lines(self, block: nodes.line_block):
         """Modify the line block element in-place, to nest line block segments.
 
         Line nodes are placed into child line block containers, based on their indentation.
         """
-        for index in range(1, len(block)):
-            if getattr(block[index], "indent", None) is None:
-                block[index].indent = block[index - 1].indent
-        self._nest_line_block_segment(block)
+        pass
 
     def _nest_line_block_segment(self, block: nodes.line_block):
-        indents = [item.indent for item in block]
-        least = min(indents)
-        new_items = []
-        new_block = nodes.line_block()
-        for item in block:
-            if item.indent > least:
-                new_block.append(item)
-            else:
-                if len(new_block):
-                    self._nest_line_block_segment(new_block)
-                    new_items.append(new_block)
-                    new_block = nodes.line_block()
-                new_items.append(item)
-        if len(new_block):
-            self._nest_line_block_segment(new_block)
-            new_items.append(new_block)
-        block[:] = new_items
+        pass
 
     def __getattr__(self, name: str):
         """This method is only be called if the attribute requested has not
@@ -324,11 +219,11 @@ class MockStateMachine:
 
     def get_source(self, lineno: int | None = None):
         """Return document source path."""
-        return self.document["source"]
+        pass
 
     def get_source_and_line(self, lineno: int | None = None):
         """Return (source path, line) tuple for current or given line number."""
-        return self.document["source"], lineno or self._lineno
+        pass
 
     def __getattr__(self, name: str):
         """This method is only be called if the attribute requested has not
@@ -369,177 +264,14 @@ class MockIncludeDirective:
         self.lineno = lineno
 
     def run(self) -> list[nodes.Element]:
-        from docutils.parsers.rst.directives.body import CodeBlock, NumberLines
-
-        if not self.document.settings.file_insertion_enabled:
-            raise DirectiveError(2, f'Directive "{self.name}" disabled.')
-
-        source_dir = Path(self.document["source"]).absolute().parent
-        include_arg = "".join([s.strip() for s in self.arguments[0].splitlines()])
-
-        if include_arg.startswith("<") and include_arg.endswith(">"):
-            # # docutils "standard" includes
-            path = Path(self.klass.standard_include_path).joinpath(include_arg[1:-1])
-        else:
-            # if using sphinx interpret absolute paths "correctly",
-            # i.e. relative to source directory
-            try:
-                sphinx_env = self.document.settings.env
-            except AttributeError:
-                pass
-            else:
-                _, include_arg = sphinx_env.relfn2path(self.arguments[0])
-                sphinx_env.note_included(include_arg)
-            path = Path(include_arg)
-        path = source_dir.joinpath(path)
-        # this ensures that the parent file is rebuilt if the included file changes
-        self.document.settings.record_dependencies.add(str(path))
-
-        # read file
-        encoding = self.options.get("encoding", self.document.settings.input_encoding)
-        error_handler = self.document.settings.input_encoding_error_handler
-        # tab_width = self.options.get("tab-width", self.document.settings.tab_width)
-        try:
-            file_content = path.read_text(encoding=encoding, errors=error_handler)
-        except FileNotFoundError as error:
-            raise DirectiveError(
-                4, f'Directive "{self.name}": file not found: {str(path)!r}'
-            ) from error
-        except Exception as error:
-            raise DirectiveError(
-                4, f'Directive "{self.name}": error reading file: {path}\n{error}.'
-            ) from error
-
-        if self.renderer.sphinx_env is not None:
-            # Emit the "include-read" event
-            # see: https://github.com/sphinx-doc/sphinx/commit/ff18318613db56d0000db47e5c8f0140556cef0c
-            arg = [file_content]
-            relative_path = Path(
-                os.path.relpath(path, start=self.renderer.sphinx_env.srcdir)
-            )
-            parent_docname = Path(self.renderer.document["source"]).stem
-            self.renderer.sphinx_env.app.events.emit(
-                "include-read",
-                relative_path,
-                parent_docname,
-                arg,
-            )
-            file_content = arg[0]
-
-        # get required section of text
-        startline = self.options.get("start-line", None)
-        endline = self.options.get("end-line", None)
-        file_content = "\n".join(file_content.splitlines()[startline:endline])
-        startline = startline or 0
-        for split_on_type in ["start-after", "end-before"]:
-            split_on = self.options.get(split_on_type, None)
-            if not split_on:
-                continue
-            split_index = file_content.find(split_on)
-            if split_index < 0:
-                raise DirectiveError(
-                    4,
-                    f'Directive "{self.name}"; option "{split_on_type}": text not found "{split_on}".',
-                )
-            if split_on_type == "start-after":
-                startline += split_index + len(split_on)
-                file_content = file_content[split_index + len(split_on) :]
-            else:
-                file_content = file_content[:split_index]
-
-        if "literal" in self.options:
-            literal_block = nodes.literal_block(
-                file_content, source=str(path), classes=self.options.get("class", [])
-            )
-            literal_block.line = 1  # TODO don;t think this should be 1?
-            self.add_name(literal_block)
-            if "number-lines" in self.options:
-                # note starting in docutils 0.22 this option is now an integer instead of a string, see: https://github.com/live-clones/docutils/commit/f39ac1413e56a330c8fea6e0d080fed0ff2b8483
-                if self.options["number-lines"] is None:
-                    startline = 1
-                elif isinstance(self.options["number-lines"], int):
-                    startline = self.options["number-lines"]
-                else:
-                    try:
-                        startline = int(self.options["number-lines"] or 1)
-                    except ValueError as err:
-                        raise DirectiveError(
-                            3, ":number-lines: with non-integer start value"
-                        ) from err
-                endline = startline + len(file_content.splitlines())
-                file_content = file_content.removesuffix("\n")
-                tokens = NumberLines([([], file_content)], startline, endline)
-                for classes, value in tokens:
-                    if classes:
-                        literal_block += nodes.inline(value, value, classes=classes)
-                    else:
-                        literal_block += nodes.Text(value)
-            else:
-                literal_block += nodes.Text(file_content)
-            return [literal_block]
-        if "code" in self.options:
-            self.options["source"] = str(path)
-            state_machine = MockStateMachine(self.renderer, self.lineno)
-            state = MockState(self.renderer, state_machine, self.lineno)
-            codeblock = CodeBlock(
-                name=self.name,
-                arguments=[self.options.pop("code")],
-                options=self.options,
-                content=file_content.splitlines(),
-                lineno=self.lineno,
-                content_offset=0,
-                block_text=file_content,
-                state=state,
-                state_machine=state_machine,
-            )
-            return codeblock.run()
-
-        # Here we perform a nested render, but temporarily setup the document/reporter
-        # with the correct document path and lineno for the included file.
-        source = self.renderer.document["source"]
-        rsource = self.renderer.reporter.source
-        line_func = getattr(self.renderer.reporter, "get_source_and_line", None)
-        try:
-            self.renderer.document["source"] = str(path)
-            self.renderer.reporter.source = str(path)
-            self.renderer.reporter.get_source_and_line = lambda li: (str(path), li)
-            if "relative-images" in self.options:
-                self.renderer.md_env["relative-images"] = os.path.relpath(
-                    path.parent, source_dir
-                )
-            if "relative-docs" in self.options:
-                self.renderer.md_env["relative-docs"] = (
-                    self.options["relative-docs"],
-                    source_dir,
-                    path.parent,
-                )
-            self.renderer.nested_render_text(
-                file_content,
-                startline + 1,
-                heading_offset=self.options.get("heading-offset", 0),
-            )
-        finally:
-            self.renderer.document["source"] = source
-            self.renderer.reporter.source = rsource
-            self.renderer.md_env.pop("relative-images", None)
-            self.renderer.md_env.pop("relative-docs", None)
-            if line_func is not None:
-                self.renderer.reporter.get_source_and_line = line_func
-            else:
-                del self.renderer.reporter.get_source_and_line
-        return []
+        pass
 
     def add_name(self, node: nodes.Element):
         """Append self.options['name'] to node['names'] if it exists.
 
         Also normalize the name string and register it as explicit target.
         """
-        if "name" in self.options:
-            name = nodes.fully_normalize_name(self.options.pop("name"))
-            if "name" in node:
-                del node["name"]
-            node["names"].append(name)
-            self.renderer.document.note_explicit_target(node, node)
+        pass
 
 
 class MockRSTParser(RSTParser):
@@ -547,14 +279,4 @@ class MockRSTParser(RSTParser):
 
     def parse(self, inputstring: str, document: nodes.document):
         """Parse the input to populate the document AST."""
-        from docutils.parsers.rst import roles
-
-        should_restore = False
-        if "" in roles._roles:
-            should_restore = True
-            blankrole = roles._roles[""]
-
-        super().parse(inputstring, document)
-
-        if should_restore:
-            roles._roles[""] = blankrole
+        pass

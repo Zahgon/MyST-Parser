@@ -37,17 +37,14 @@ def _validate_int(
     setting, value, option_parser, config_parser=None, config_section=None
 ) -> int:
     """Validate an integer setting."""
-    return int(value)
+    pass
 
 
 def _validate_comma_separated_set(
     setting, value, option_parser, config_parser=None, config_section=None
 ) -> set[str]:
     """Validate an integer setting."""
-    value = frontend.validate_comma_separated_list(
-        setting, value, option_parser, config_parser, config_section
-    )
-    return set(value)
+    pass
 
 
 def _create_validate_tuple(length: int) -> Callable[..., tuple[str, ...]]:
@@ -56,14 +53,7 @@ def _create_validate_tuple(length: int) -> Callable[..., tuple[str, ...]]:
     def _validate(
         setting, value, option_parser, config_parser=None, config_section=None
     ):
-        string_list = frontend.validate_comma_separated_list(
-            setting, value, option_parser, config_parser, config_section
-        )
-        if len(string_list) != length:
-            raise ValueError(
-                f"Expecting {length} items in {setting}, got {len(string_list)}."
-            )
-        return tuple(string_list)
+        pass
 
     return _validate
 
@@ -93,13 +83,7 @@ def _create_validate_yaml(field: Field):
 
         Items delimited by `,`, and key-value pairs delimited by `=`.
         """
-        try:
-            output = yaml.safe_load(value)
-        except Exception as err:
-            raise ValueError("Invalid YAML string") from err
-        if not isinstance(output, dict):
-            raise ValueError("Expecting a YAML dictionary")
-        return output
+        pass
 
     return _validate_yaml
 
@@ -111,15 +95,7 @@ def _validate_url_schemes(
 
     This is a tricky one, because it can be either a comma-separated list or a YAML dictionary.
     """
-    try:
-        output = yaml.safe_load(value)
-    except Exception as err:
-        raise ValueError("Invalid YAML string") from err
-    if isinstance(output, str):
-        output = dict.fromkeys(output.split(","))
-    if not isinstance(output, dict):
-        raise ValueError("Expecting a comma-delimited str or YAML dictionary")
-    return output
+    pass
 
 
 def _attr_to_optparse_option(at: Field, default: Any) -> tuple[dict[str, Any], str]:
@@ -221,15 +197,7 @@ def create_myst_config(
     prefix: str = "myst_",
 ):
     """Create a configuration instance from the given settings."""
-    values = {}
-    for attribute in config_cls.get_fields():
-        if "docutils" in attribute.metadata.get("omit", []):
-            continue
-        setting = f"{prefix}{attribute.name}"
-        val = getattr(settings, setting, DOCUTILS_UNSET)
-        if val is not DOCUTILS_UNSET:
-            values[attribute.name] = val
-    return config_cls(**values)
+    pass
 
 
 class Parser(RstParser):
@@ -251,12 +219,7 @@ class Parser(RstParser):
     translate_section_name = None
 
     def get_transforms(self):
-        return super().get_transforms() + [
-            UnreferencedFootnotesDetector,
-            SortFootnotes,
-            CollectFootnotes,
-            ResolveAnchorIds,
-        ]
+        pass
 
     def parse(self, inputstring: str, document: nodes.document) -> None:
         """Parse source text.
@@ -264,73 +227,12 @@ class Parser(RstParser):
         :param inputstring: The source string to parse
         :param document: The root docutils node to add AST elements to
         """
-        from docutils.writers._html_base import HTMLTranslator
-
-        HTMLTranslator.visit_rubric = visit_rubric_html
-        HTMLTranslator.depart_rubric = depart_rubric_html
-        HTMLTranslator.visit_container = visit_container_html
-        HTMLTranslator.depart_container = depart_container_html
-
-        self.setup_parse(inputstring, document)
-
-        # check for exorbitantly long lines
-        if hasattr(document.settings, "line_length_limit"):
-            for i, line in enumerate(inputstring.split("\n")):
-                if len(line) > document.settings.line_length_limit:
-                    error = document.reporter.error(
-                        f"Line {i + 1} exceeds the line-length-limit:"
-                        f" {document.settings.line_length_limit}."
-                    )
-                    document.append(error)
-                    return
-
-        # create parsing configuration from the global config
-        try:
-            config = create_myst_config(document.settings)
-        except Exception as exc:
-            error = document.reporter.error(f"Global myst configuration invalid: {exc}")
-            document.append(error)
-            config = MdParserConfig()
-
-        if "attrs_image" in config.enable_extensions:
-            create_warning(
-                document,
-                "The `attrs_image` extension is deprecated, "
-                "please use `attrs_inline` instead.",
-                MystWarnings.DEPRECATED,
-            )
-
-        # update the global config with the file-level config
-        try:
-            topmatter = read_topmatter(inputstring)
-        except TopmatterReadError:
-            pass  # this will be reported during the render
-        else:
-            if topmatter:
-                warning = lambda wtype, msg: create_warning(  # noqa: E731
-                    document, msg, wtype, line=1, append_to=document
-                )
-                config = merge_file_level(config, topmatter, warning)
-
-        # parse content
-        parser = create_md_parser(config, DocutilsRenderer)
-        parser.options["document"] = document
-        parser.render(inputstring)
-
-        # post-processing
-
-        # replace raw nodes if raw is not allowed
-        if not getattr(document.settings, "raw_enabled", True):
-            for node in document.traverse(nodes.raw):
-                warning = document.reporter.warning("Raw content disabled.")
-                node.parent.replace(node, warning)
-
-        self.finish_parse()
+        pass
 
 
 class SimpleTranslator(HTMLTranslator):
     def stylesheet_call(self, *args, **kwargs):
-        return ""
+        pass
 
 
 class SimpleWriter(Writer):
@@ -340,8 +242,7 @@ class SimpleWriter(Writer):
     )
 
     def apply_template(self):
-        subs = self.interpolation_dict()
-        return "{body}\n".format(**subs)
+        pass
 
     def __init__(self):
         self.parts = {}
@@ -350,24 +251,17 @@ class SimpleWriter(Writer):
 
 def _run_cli(writer_name: str, writer_description: str, argv: list[str] | None):
     """Run the command line interface for a particular writer."""
-    publish_cmdline(
-        parser=Parser(),
-        writer_name=writer_name,
-        description=(
-            f"Generates {writer_description} from standalone MyST sources.\n{default_description}"
-        ),
-        argv=argv,
-    )
+    pass
 
 
 def cli_html(argv: list[str] | None = None) -> None:
     """Cmdline entrypoint for converting MyST to HTML."""
-    _run_cli("html", "(X)HTML documents", argv)
+    pass
 
 
 def cli_html5(argv: list[str] | None = None):
     """Cmdline entrypoint for converting MyST to HTML5."""
-    _run_cli("html5", "HTML5 documents", argv)
+    pass
 
 
 def cli_html5_demo(argv: list[str] | None = None):
@@ -376,51 +270,27 @@ def cli_html5_demo(argv: list[str] | None = None):
     This is a special case of the HTML5 writer,
     that only outputs the body of the document.
     """
-    publish_cmdline(
-        parser=Parser(),
-        writer=SimpleWriter(),
-        description=(
-            f"Generates body HTML5 from standalone MyST sources.\n{default_description}"
-        ),
-        settings_overrides={
-            "doctitle_xform": False,
-            "sectsubtitle_xform": False,
-            "initial_header_level": 1,
-        },
-        argv=argv,
-    )
+    pass
 
 
 def to_html5_demo(inputstring: str, **kwargs) -> str:
     """Convert a MyST string to HTML5."""
-    overrides = {
-        "doctitle_xform": False,
-        "sectsubtitle_xform": False,
-        "initial_header_level": 1,
-        "output_encoding": "unicode",
-    }
-    overrides.update(kwargs)
-    return publish_string(
-        inputstring,
-        parser=Parser(),
-        writer=SimpleWriter(),
-        settings_overrides=overrides,
-    )
+    pass
 
 
 def cli_latex(argv: list[str] | None = None):
     """Cmdline entrypoint for converting MyST to LaTeX."""
-    _run_cli("latex", "LaTeX documents", argv)
+    pass
 
 
 def cli_xml(argv: list[str] | None = None):
     """Cmdline entrypoint for converting MyST to XML."""
-    _run_cli("xml", "Docutils-native XML", argv)
+    pass
 
 
 def cli_pseudoxml(argv: list[str] | None = None):
     """Cmdline entrypoint for converting MyST to pseudo-XML."""
-    _run_cli("pseudoxml", "pseudo-XML", argv)
+    pass
 
 
 def visit_rubric_html(self, node):
@@ -478,10 +348,7 @@ def visit_rubric_html(self, node):
     and does not "honor" the heading level.
     So here we override the visit/depart methods to output the correct <h> element
     """
-    if "level" in node:
-        self.body.append(self.starttag(node, f"h{node['level']}", "", CLASS="rubric"))
-    else:
-        self.body.append(self.starttag(node, "p", "", CLASS="rubric"))
+    pass
 
 
 def depart_rubric_html(self, node):
@@ -489,10 +356,7 @@ def depart_rubric_html(self, node):
 
     See explanation in `visit_rubric_html`
     """
-    if "level" in node:
-        self.body.append(f"</h{node['level']}>\n")
-    else:
-        self.body.append("</p>\n")
+    pass
 
 
 def visit_container_html(self, node: nodes.Node):
@@ -501,14 +365,7 @@ def visit_container_html(self, node: nodes.Node):
     to remove the "container" class for divs
     this avoids CSS clashes with the bootstrap theme
     """
-    classes = "docutils container"
-    attrs = {}
-    if node.get("is_div", False):
-        # we don't want the CSS for container for these nodes
-        classes = "docutils"
-    if "style" in node:
-        attrs["style"] = node["style"]
-    self.body.append(self.starttag(node, "div", CLASS=classes, **attrs))
+    pass
 
 
 def depart_container_html(self, node: nodes.Node):
@@ -516,4 +373,4 @@ def depart_container_html(self, node: nodes.Node):
 
     See explanation in `visit_container_html`
     """
-    self.body.append("</div>\n")
+    pass

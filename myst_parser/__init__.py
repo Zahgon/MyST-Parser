@@ -8,7 +8,4 @@ __version__ = "5.0.0"
 
 def setup(app):
     """Initialize the [Sphinx](https://github.com/sphinx-doc/sphinx) extension."""
-    from myst_parser.sphinx_ext.main import setup_sphinx
-
-    setup_sphinx(app, load_parser=True)
-    return {"version": __version__, "parallel_read_safe": True}
+    pass
